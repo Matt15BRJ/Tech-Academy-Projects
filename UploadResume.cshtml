@@ -1,0 +1,29 @@
+﻿@model JobBoardMVC.Models.ResumeModel
+@{
+    ViewBag.Title = "Resume";
+}
+
+<h2>Upload Resume to Server:</h2>
+
+@using (Html.BeginForm("UploadResume", "Dashboard", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    <div class="form-group">
+        @Html.Label("Resume", new {@class = "control-label col-md-2"})
+        <div class="col-md-10">
+            <input type="file" id="Resume" name="Upload" />
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="col-md-offset-2 col-md-10">
+            <input type="submit" value="UploadResume" class="btn btn-default" />
+        </div>
+    </div>
+
+
+    //<input type="file" name="file" id="file" />
+    //<input type="submit" value="UploadResume" />
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}

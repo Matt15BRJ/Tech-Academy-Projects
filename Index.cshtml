@@ -1,0 +1,88 @@
+﻿@using Microsoft.AspNet.Identity
+@model IEnumerable<JobBoardMVC.Models.SavedJob>
+
+@{
+    ViewBag.Title = "My Dashboard";
+    Layout = "../Shared/_Layout.cshtml";
+    @*Global variables*@
+    int jobCount = ViewBag.Counts;
+    int maxPagesDisplayed = 5; @*This var should always equal the JS var with the same name*@
+    int jobsPerPage = 5;
+    var userName = User.Identity.GetUserName();
+}
+
+
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+
+@*
+    <div id="search-wrapper" style="width:400px; margin-right:auto; margin-left:auto; text-align: center;">
+        <input id="TitleSearch" type="text" name="jobTitleString" class="form-control" placeholder="Search for companies or jobs..." />
+    </div>
+*@
+
+<p id="dashboardTitle">Dashboard</p>
+
+
+@Html.ActionLink("View Saved Companies", "DisplayCompanies", new { } , new { @class = "btn btn-warning change-view" })
+
+
+
+<h3>Saved Jobs</h3>
+<div class="container tableContainer">
+    <table class="table table-hover table-responsive tablesorter" id="savedJobTable">
+        <thead>
+            <tr>
+                <th>@Html.DisplayNameFor(model => model.CompanyCompanyName)</th>
+                <th>@Html.DisplayNameFor(model => model.JobTitle)</th>
+                <th>@Html.DisplayNameFor(model => model.Location)</th>
+                <th>@Html.DisplayNameFor(model => model.DatePosted)</th>
+                <th>@Html.DisplayNameFor(model => model.DateSaved)</th>
+                <th>@Html.DisplayNameFor(model => model.ApplicationLink)</th>
+                <th>Delete Job</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <!-- <td> tags must have no whitespace -->
+                    <td>@Html.ActionLink(item.CompanyCompanyName, "Details", "CompanyInfo", new { id = item.CompanyCompanyName }, new {target = "_blank"})</td>
+                    <td>@Html.DisplayFor(modelItem => item.JobTitle)</td>
+                    <td>@Html.DisplayFor(modelItem => item.Location)</td>
+                    <td>@Html.DisplayFor(modelItem => item.DatePosted)</td>
+                    <td>@Html.DisplayFor(modelItem => item.DateSaved)</td>
+                    <td class="target"><input type="button" class="btn btn-warning" value="Apply" onclick="window.open('@item.ApplicationLink')"></td>
+                    <td>@Html.ActionLink("Delete", "Delete", new { id = item.ID }, new { @class = "btn btn-danger" })</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+@*This is the code for the number of results per page*@
+
+    @if (jobCount > jobsPerPage)
+    {
+        <div class="Container">
+         <i class="fa fa-angle-double-left fa-2x"></i>
+            <ul class="pagination">
+                <li class="active paginationLink"><a>1</a></li>
+                @for (var i = 2; i <= (jobCount - 1) / jobsPerPage + 1 && i <= maxPagesDisplayed; i++)
+                {
+                    <li class="paginationLink"><a>@i</a></li>
+                }
+            </ul>
+            <i class="fa fa-angle-double-right fa-2x"></i>
+            <br />
+
+        </div>
+    }
+    Results per page: <select id="jobs-per-page">
+        <option value="5" selected="selected">5</option>
+        <option value="10">10</option>
+        <option value="20">20</option>
+        <option value="50">50</option>
+        <option value="100">100</option>
+    </select>
+</div>
+
+<script src="~/Scripts/jquery-3.1.1.min.js"></script>

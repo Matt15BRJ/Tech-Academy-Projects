@@ -31,6 +31,7 @@ namespace JobBoardMVC.Models
         public byte Resume { get; set; }
 
         public virtual ICollection<ResumeModel> Resumes { get; set; }
+        public virtual ICollection<ProfilePhoto> Photos { get; set; }
 
         public async Task<ClaimsIdentity> GenerateUserIdentityAsync(UserManager<User> manager)
         {
@@ -70,6 +71,7 @@ namespace JobBoardMVC.Models
         public DbSet<Company> Companies { get; set; }
         public DbSet<SavedCompany> SavedCompanies { get; set; }
         public DbSet<ResumeModel> Resumes { get; set; }
-
-    }
+        public DbSet<ProfilePhoto> Photos { get; set; }
+		public DbSet<CompanyFile> CompanyFiles { get; set; }
+	}
 }

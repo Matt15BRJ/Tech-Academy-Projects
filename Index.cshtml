@@ -14,9 +14,20 @@
 
 
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+<style>
+	p, h3, span {
+		color: #fff;
+	}
+	.body-content {
+		background-color: rgba(255,255,255,0);
+	}
+	.tablesorter {
+		background-color: rgba(255,255,255,0.9);
+	}
+</style>
 
-@*
-    <div id="search-wrapper" style="width:400px; margin-right:auto; margin-left:auto; text-align: center;">
+@*  If this block is to be implemented on this site, it needs to be updated to match /jobs/index.cshtml
+    <div id="search-wrapper">
         <input id="TitleSearch" type="text" name="jobTitleString" class="form-control" placeholder="Search for companies or jobs..." />
     </div>
 *@
@@ -76,7 +87,7 @@
 
         </div>
     }
-    Results per page: <select id="jobs-per-page">
+    <span>Results per page:</span> <select id="jobs-per-page">
         <option value="5" selected="selected">5</option>
         <option value="10">10</option>
         <option value="20">20</option>

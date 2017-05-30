@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using static JobBoardMVC.Controllers.ManageController;
+using System.Data.Entity.Infrastructure;
 
 namespace JobBoardMVC
 {
@@ -47,6 +48,20 @@ namespace JobBoardMVC
             }
         }
 
+        // GET: File(Resume)
+        //public ActionResult RetrieveResume(Guid id)
+        //{
+        //    var fileToRetrieve = db.Resumes.Find(id);
+        //    return File(fileToRetrieve.Content, fileToRetrieve.ContentType);
+        //}
+
+        // GET: Photo
+        public ActionResult RetrieveProfilePhoto(Guid id)
+        {
+            var photoToRetrieve = db.Photos.Find(id);
+            return File(photoToRetrieve.Content, photoToRetrieve.ContentType);
+        }
+
         [Authorize]
         public ActionResult UserProfile()
         {
@@ -57,7 +72,7 @@ namespace JobBoardMVC
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            User user = db.Users.Include(s => s.Resumes).SingleOrDefault(s=>s.Id == id);
+            User user = db.Users.Include(s => s.Resumes).SingleOrDefault(s => s.Id == id); ;
             if (user == null)
             {
                 return HttpNotFound();
@@ -69,7 +84,7 @@ namespace JobBoardMVC
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> UserProfile([Bind(Include = "FirstName, LastName, Location, Languages, Experience")] User _userProfile)
         {
-            if(ModelState.IsValid)
+            if (ModelState.IsValid)
             {
                 var userName = User.Identity.GetUserName();//get user's username for database reference
                 //get row in database that corresponds to the user so we can edit data in specific columns
@@ -77,7 +92,7 @@ namespace JobBoardMVC
                             where u.UserName == userName
                             select u).First();
                 //check incoming data to make sure there is something there and that it doesnt match what is already in the database before updating
-                if((_userProfile.FirstName != user.FirstName) && (_userProfile.FirstName.Trim().Length != 0) )
+                if ((_userProfile.FirstName != user.FirstName) && (_userProfile.FirstName.Trim().Length != 0))
                     user.FirstName = _userProfile.FirstName;
                 if ((_userProfile.LastName != user.LastName) && (_userProfile.LastName.Trim().Length != 0))
                     user.LastName = _userProfile.LastName;
@@ -92,6 +107,64 @@ namespace JobBoardMVC
             }
 
             return View(_userProfile);
+        }
+
+        public ActionResult UploadPhoto()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> UploadPhoto(HttpPostedFileBase upload)
+        {
+            var id = User.Identity.GetUserId();
+
+            if (id == null)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+            User _user = db.Users.Find(id);
+            if (_user == null)
+            {
+                return HttpNotFound();
+            }
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    if (upload != null && upload.ContentLength > 0)
+                    {
+                        if (_user.Photos.Any(f => f.FileType == FileType.Photo))
+                        {
+                            db.Photos.Remove(_user.Photos.First(f => f.FileType == FileType.Photo));
+                        }
+                        var newPhoto = new ProfilePhoto
+                        {
+                            FileId = Guid.NewGuid(),
+                            FileName = System.IO.Path.GetFileName(upload.FileName),
+                            FileType = FileType.Photo,
+                            ContentType = upload.ContentType,
+                            UserId = _user.Id
+
+                        };
+                        using (var reader = new System.IO.BinaryReader(upload.InputStream))
+                        {
+                            newPhoto.Content = reader.ReadBytes(upload.ContentLength);
+                        }
+                        _user.Photos = new List<ProfilePhoto> { newPhoto };
+                        db.Photos.Add(newPhoto);
+                        await db.SaveChangesAsync();
+                    }
+                }
+
+                return RedirectToAction("UserProfile", new { Message = ManageMessageId.UploadPhotoSuccess });
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+
         }
 
         public ActionResult UploadResume()
@@ -145,8 +218,45 @@ namespace JobBoardMVC
 
                 throw ex;
             }
-
         }
+
+        // GET: Dashboard/DeleteResume/5
+        [Authorize]
+        public ActionResult DeleteResume(Guid? id)
+        {
+            if (id == null)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+            ResumeModel resumeToDelete = db.Resumes.Find(id);
+            if (resumeToDelete == null)
+            {
+                return HttpNotFound();
+            }
+            return View(resumeToDelete);
+        }
+
+        // POST: Dashboard/DeleteResume/5
+        [Authorize]
+        [HttpPost, ActionName("DeleteResume")]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> DeleteResumeConfirmed(Guid fileId)
+        {
+            try
+            {
+                //Guid FileId = Guid.Parse(fileId);
+                var fileToDelete = db.Resumes.Find(fileId);
+                db.Resumes.Remove(fileToDelete);
+                await db.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+            return RedirectToAction("UserProfile");
+        }
+       
 
         [Authorize]
         public ActionResult DisplayCompanies()
@@ -258,7 +368,7 @@ namespace JobBoardMVC
         // Accessed from DeleteCompany view
 
         [Authorize]
-        [HttpPost, ActionName("DeleteCompany")]
+        [HttpPost, ActionName("Delete Company")]
         [ValidateAntiForgeryToken]
         public ActionResult DeleteCompanyConfirmed(int id)
         {

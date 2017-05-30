@@ -6,13 +6,28 @@
     Layout = "../Shared/_Layout.cshtml";
     //Global variables//
     var username = User.Identity.GetUserName();
+    var userId = User.Identity.GetUserId();
 }
 @Scripts.Render("~/bundles/jquery")
 @Scripts.Render("~/bundles/jqueryval")
 
 
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+<style>
+	.body-content {
+		background-color: rgba(255,255,255,0.9);
+		max-width: 900px;
+	}
 
+	p, h3, span {
+		color: #fff;
+	}
+
+	.panel-default > .panel-heading {
+		background-color: #f0ad4e;
+		color: #fff;
+	}
+</style>
 <h2>@ViewBag.Title</h2>
 <h4>User Name: @username</h4>
 
@@ -63,16 +78,47 @@
     <dd>
         @Html.DisplayFor(model => model.Experience)
     </dd>
-    @if(Model.Resumes.Any(f=>f.FileType == JobBoardMVC.Models.FileType.Resume))
+    @if (Model.Resumes.Any(f => f.FileType == JobBoardMVC.Models.FileType.Resume))
     {
         <dt>
             Resume
         </dt>
         <dd>
-            <a href="~/ResumeModel?id=@Model.Resumes.First(f=>f.FileType == JobBoardMVC.Models.FileType.Resume).FileId" />
+            @foreach (var r in Model.Resumes)
+            {
+                var _fileId = r.FileId;
+                <a href="../File/Index?id=@_fileId">@r.FileName</a>
+                @Html.ActionLink("Delete", "DeleteResume", new { id=_fileId})                
+                <br />
+            }
+
+        </dd>
+    }
+
+    @if (Model.Photos.Any(f => f.FileType == JobBoardMVC.Models.FileType.Photo))
+    {
+        <dt>
+            Photo
+        </dt>
+        <dd>
+            <img src="~/Dashboard/RetrieveProfilePhoto?id=@Model.Photos.Last(f => f.FileType == JobBoardMVC.Models.FileType.Photo).FileId" height="200"
+                 alt="../images/DefaultProfilePic.png" /><br />
+            <a href="../Dashboard/UploadPhoto">Edit</a>
+        </dd>   
+    }
+
+    else
+    {
+        <dt>
+            Photo
+        </dt>
+        <dd>
+        <img src="../images/DefaultProfilePic.png" height="200"/><br />
+        <a href="../Dashboard/UploadPhoto">Edit</a>
         </dd>
     }
 </dl>
+
 @*below creates an accordian which holds the form for updating/adding user profile info*@
 <div class="panel-group" id="editprofileaccordian" role="tablist" aria-multiselectable="true">
     <div class="panel panel-default">
@@ -147,7 +193,7 @@
 
 <a href="../Manage/ChangePassword">Change Password</a><br />
 <a href="../Manage/AddPhoneNumber">Add Phone Number</a><br />
-<a href="../Dashboard/UploadResume">Upload Resume</a>
+<a href="../Dashboard/UploadResume">Upload Resume</a><br />
 
 
 
